@@ -1,7 +1,6 @@
 # coding: utf-8
 
-
-"""This code is taken from the Modular toolkit for
+"""This code is adapted from the Modular toolkit for
 Data Processing. Its license is:
 
 This file is part of Modular toolkit for Data Processing (MDP).
@@ -40,27 +39,59 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
+
 from datetime import timedelta
 import sys
 import time
 
+
+def ioctl_GWINSZ(fd):                  #### TABULATION FUNCTIONS
+     try:                                ### Discover terminal width
+         import fcntl, termios, struct
+         cr = struct.unpack('hh',
+                            fcntl.ioctl(fd, termios.TIOCGWINSZ, '1234'))
+     except:
+         return None
+     return cr
+
 def get_termsize():
-    """Return terminal size as a tuple (height, width)."""
-    try:
-        # this works on unix machines
-        import struct, fcntl, termios
-        height, width = struct.unpack("hhhh",
-                                      fcntl.ioctl(0,termios.TIOCGWINSZ,
-                                                  "\000"*8))[0:2]
-        if not (height and width):
-            height, width = 24, 79
-    except ImportError:
-        # for windows machins, use default values
-        # Does anyone know how to get the console size under windows?
-        # One approach is:
-        # http://code.activestate.com/recipes/440694/
-        height, width = 24, 79
-    return height, width
+     ### decide on *some* terminal size
+     # try open fds
+     cr = ioctl_GWINSZ(0) or ioctl_GWINSZ(1) or ioctl_GWINSZ(2)
+     if not cr:
+         # ...then ctty
+         try:
+             fd = os.open(os.ctermid(), os.O_RDONLY)
+             cr = ioctl_GWINSZ(fd)
+             os.close(fd)
+         except:
+             pass
+     if not cr:
+         # env vars or finally defaults
+         try:
+             cr = (env['LINES'], env['COLUMNS'])
+         except:
+             cr = (25, 80)
+     # reverse rows, cols
+     return int(cr[1]), int(cr[0])
+
+# def get_termsize():
+#     """Return terminal size as a tuple (height, width)."""
+#     try:
+#         # this works on unix machines
+#         import struct, fcntl, termios
+#         height, width = struct.unpack("hhhh",
+#                                       fcntl.ioctl(0,termios.TIOCGWINSZ,
+#                                                   "\000"*8))[0:2]
+#         if not (height and width):
+#             height, width = 24, 79
+#     except ImportError:
+#         # for windows machins, use default values
+#         # Does anyone know how to get the console size under windows?
+#         # One approach is:
+#         # http://code.activestate.com/recipes/440694/
+#         height, width = 24, 79
+#     return height, width
 
 def fmt_time(t, delimiters):
     """Return time formatted as a timedelta object."""
@@ -94,14 +125,14 @@ def _progress(percent, last, style, layout):
             box = ''.join(['\r', layout['indent'],
                            box[0:percent_idx],
                            percent_s,
-                           box[percent_idx+len(percent_s):]]) 
+                           box[percent_idx+len(percent_s):]])
     else:
         now = time.time()
         if percent == 0:
             # write the time box directly
             tbox = ''.join(['?', layout['separator'], '?'])
         else:
-            # Elapsed 
+            # Elapsed
             elapsed = now - layout['t_start']
             # Estimated total time
             if layout['speed'] == 'mean':
@@ -136,9 +167,9 @@ def _progress(percent, last, style, layout):
         sys.stdout.write(box)
         sys.stdout.flush()
     return box
-    
+
 def progressinfo(sequence, length = None, style = 'bar', custom = None):
-    """A fully configurable text-mode progress info box tailored to the 
+    """A fully configurable text-mode progress info box tailored to the
        command-line die-hards.
 
        To get a progress info box for your loops use it like this:
@@ -163,8 +194,8 @@ def progressinfo(sequence, length = None, style = 'bar', custom = None):
           ...     time.sleep(1)
           ...     if download_process_has_finished():
           ...         break
-          
-       
+
+
      Arguments:
 
      sequence    - if it is a Python container object (list,
@@ -172,7 +203,7 @@ def progressinfo(sequence, length = None, style = 'bar', custom = None):
                    __len__ method call, the length argument can
                    be omitted. If it is an iterator (generators,
                    file objects, etc...) the length argument must
-                   be specified. 
+                   be specified.
 
      Keyword arguments:
 
@@ -182,7 +213,7 @@ def progressinfo(sequence, length = None, style = 'bar', custom = None):
 
      style      - If style == 'bar', display a progress bar. The
                   default layout is:
-                  
+
                   [===========60%===>.........]
 
                   If style == 'timer', display a time elapsed / time
@@ -191,7 +222,7 @@ def progressinfo(sequence, length = None, style = 'bar', custom = None):
                   23% [02:01:28] - [00:12:37]
 
                   where fields have the following meaning:
-       
+
                   percent_done% [time_elapsed] - [time_remaining]
 
      custom     - a dictionary for customizing the layout.
@@ -219,8 +250,8 @@ def progressinfo(sequence, length = None, style = 'bar', custom = None):
                     indent = string used for indenting the progress info box
                     position = position of the percent done string,
                                must be one out of ['left', 'middle', 'right']
-        
-     
+
+
      Note 1: by default sys.stdout is flushed each time a new box is drawn.
              If you need to rely on buffered stdout you'd better not use this
              (any?) progress info box.
@@ -274,7 +305,7 @@ def progressinfo(sequence, length = None, style = 'bar', custom = None):
     last = None
     for count, value in enumerate(sequence):
         # generate progress info
-        if iterate_on_items: 
+        if iterate_on_items:
             last = _progress(value/length, last, style, layout)
         else:
             last = _progress(count/length, last, style, layout)
@@ -288,10 +319,14 @@ def progressinfo(sequence, length = None, style = 'bar', custom = None):
     # clean up terminal
     sys.stdout.write('\n\r')
 
+def test_foo():
+    import time
+    for i in progressinfo(range(200)):
+        time.sleep(.01)
+
 # execute this file for a demo of the progressinfo style
 if __name__ == '__main__':
-    #import random
-    import mdp
+    import random
     import tempfile
     print 'Testing progressinfo...'
     # test various customized layouts
@@ -312,8 +347,7 @@ if __name__ == '__main__':
     # generate random character sequence
     inp_list = []
     for j in range(500):
-    #    inp_list.append(chr(random.randrange(256)))
-        inp_list.append(chr(mdp.numx_rand.randint(256)))
+       inp_list.append(chr(random.randrange(256)))
     string = ''.join(inp_list)
     # test various customized layouts
     cust_list = [ {'position': 'left',
@@ -321,7 +355,7 @@ if __name__ == '__main__':
                    'delimiters': '()'},
                   {'position':'right'}]
     for cust in cust_list:
-        out_list = [] 
+        out_list = []
         for i in progressinfo(string, style = 'timer', custom = cust):
             time.sleep(0.02)
             out_list.append(i)
@@ -356,4 +390,3 @@ if __name__ == '__main__':
                              custom={'speed':'last'}):
         time.sleep(1)
     print 'Done.'
-
