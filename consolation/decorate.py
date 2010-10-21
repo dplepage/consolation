@@ -46,9 +46,16 @@ def showprogress(fn):
 import time
 
 subs = []
-def subcommand(fn):
-    subs.append(fn)
-    return fn
+def subcommand(*args, **kwargs):
+    def wrapper(fn):
+        fn = plac.annotations(**kwargs)(fn)
+        subs.append(fn)
+        return fn
+    # for the @subcommand case, instead of @subcommand(args)
+    if len(kwargs) == 0 and len(args) == 1:
+        return wrapper(args[0])
+    return wrapper
+
 
 def run_subcommands():
     class Foo(object):
