@@ -1,0 +1,5 @@
+setup.py
+README.rst
+consolation/__init__.py
+consolation/decorate.py
+consolation/progress_bar.py
