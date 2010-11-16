@@ -1,9 +1,27 @@
 import sys
+import atexit
+import os
+from itertools import count
 import __builtin__
 from functools import wraps
 import warnings
 import plac
 from progress_bar import progressinfo as pinf
+
+def last_frame():
+    frame = sys._getframe(0)
+    for i in count(1):
+        try:
+            frame = sys._getframe(i)
+        except ValueError:
+            return frame
+
+# TODO is it always the case that the last frame, as of importing this module,
+# is always the file that was actually called? Probably there are toolkits 
+# with their own magic frame manipulation that will break this.
+_main_frame = last_frame() 
+
+#TODO hack this to use names of functions instead of functions themselves.
 
 show_loops = False
 
