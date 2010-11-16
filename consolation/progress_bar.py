@@ -73,7 +73,7 @@ def get_termsize():
          except:
              cr = (25, 80)
      # reverse rows, cols
-     return int(cr[1]), int(cr[0])
+     return int(cr[0]), int(cr[1])
 
 # def get_termsize():
 #     """Return terminal size as a tuple (height, width)."""
