@@ -2,7 +2,7 @@ import plac
 
 class Console(object):
     """A console application"""
-    def __init__(self, name):
+    def __init__(self, name, autorun=False):
         super(Console, self).__init__()
         self.name = name
         class Subcommander(object):
@@ -29,9 +29,13 @@ class Console(object):
             plac.call(self.main_fn)
         else:
             plac.Interpreter.call(self.sc)
+    
+    def __del__(self):
+        if self.autorun:
+            self.run()
 
 if __name__ == '__main__':
-    app = Console(__name__)
+    app = Console(__name__, autorun=True)
 
     @app.subcommand('bar')
     def test(arg='foo'):
