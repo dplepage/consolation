@@ -21,6 +21,7 @@ def main(fn):
             except Exception,e:
                 print "{0}: {1}: {2}".format(sys.argv[0], type(e).__name__, e)
         call(fn)
+    return fn
 
 def loop(x):
     if show_loops:
