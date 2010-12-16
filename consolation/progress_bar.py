@@ -72,7 +72,6 @@ def get_termsize():
              cr = (env['LINES'], env['COLUMNS'])
          except:
              cr = (25, 80)
-     # reverse rows, cols
      return int(cr[0]), int(cr[1])
 
 # def get_termsize():
