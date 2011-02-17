@@ -1,3 +1,30 @@
+from app import Console
+
+        
+class Arg(object):
+    """Wrapper around plac annotation"""
+    def __init__(self, help='', type=None, choices=None, metavar=None, abbrev=None, kind='positional'):
+        super(Arg, self).__init__()
+        self.help = help
+        self.type = type
+        self.choices = choices
+        self.metavar = metavar
+        self.abbrev = abbrev
+        self.kind = kind
+
+
+c = Console("FOO")
+main = c.main
+
+def subcommand(*args, **kwargs):
+    # for the @subcommand case, instead of @subcommand(args)
+    if len(kwargs) == 0 and len(args) == 1:
+        return c.subcommand()(args[0])
+    return c.subcommand(*args, **kwargs)
+
+def run_subcommands():
+    c.run()
+
 import sys
 import os
 from itertools import count
@@ -80,7 +107,10 @@ def run_subcommands():
         commands = [cmd for cmd in subs]
     
     for cmd in subs:
-        setattr(Foo, cmd, staticmethod(getmainfunc(cmd)))
+        try:
+            setattr(Foo, cmd, staticmethod(getmainfunc(cmd)))
+        except KeyError:
+            pass
     plac.Interpreter.call(Foo)
 
 def run_mains():

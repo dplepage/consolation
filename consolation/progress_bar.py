@@ -43,6 +43,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 from datetime import timedelta
 import sys
 import time
+import os
 
 
 def ioctl_GWINSZ(fd):                  #### TABULATION FUNCTIONS
@@ -67,6 +68,7 @@ def get_termsize():
          except:
              pass
      if not cr:
+         env = os.environ
          # env vars or finally defaults
          try:
              cr = (env['LINES'], env['COLUMNS'])
@@ -281,7 +283,7 @@ def progressinfo(sequence, length = None, style = 'bar', custom = None):
                    'char2' : '>',
                    'char3' : '.' }
         if custom is not None:
-            layout.update(custom)
+            dict.update(layout, custom)
         fixed_lengths = len(layout['indent']) + 4
         if layout['position'] in ['left', 'right']:
             fixed_lengths += 4
@@ -295,7 +297,7 @@ def progressinfo(sequence, length = None, style = 'bar', custom = None):
                    't_start' : time.time()
                    }
         if custom is not None:
-            layout.update(custom)
+            dict.update(layout,custom)
     else:
         err_str = "Style `%s' not known." % style
         raise ValueError(err_str)
@@ -317,11 +319,6 @@ def progressinfo(sequence, length = None, style = 'bar', custom = None):
             last = _progress((count+1)/length, last, style, layout)
     # clean up terminal
     sys.stdout.write('\n\r')
-
-def test_foo():
-    import time
-    for i in progressinfo(range(200)):
-        time.sleep(.01)
 
 # execute this file for a demo of the progressinfo style
 if __name__ == '__main__':

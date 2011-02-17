@@ -8,6 +8,7 @@ class Console(object):
         class Subcommander(object):
             commands = []
         self.sc = Subcommander
+        self.autorun = autorun
         self.main_fn = None
     
     def add_subcommand(self, fn, cmd=None):
@@ -29,10 +30,6 @@ class Console(object):
             plac.call(self.main_fn)
         else:
             plac.Interpreter.call(self.sc)
-    
-    def __del__(self):
-        if self.autorun:
-            self.run()
 
 if __name__ == '__main__':
     app = Console(__name__, autorun=True)
