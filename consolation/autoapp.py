@@ -44,9 +44,7 @@ def main(*args, **kwargs):
 
 def subcommand(*args, **kwargs):
     def wrap(fn):
-        print "Looking at", fn.__name__
         if inmain(inspect.currentframe(1)):
-            print "Taking", fn.__name__
             AutoRunner.setupDefaultApp()
             return AutoRunner.app.subcommand(*args, **kwargs)(fn)
         else:
