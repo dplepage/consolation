@@ -7,13 +7,14 @@ from fmt_errors import format_errors
 '''
 Note - some sort of configuration scheme would be good.
 '''
-
+ 
 class Console(object):
     """A console application"""
     def __init__(self, name, autorun=False):
         super(Console, self).__init__()
         self.name = name
         class Subcommander(object):
+            '''Plac needs an object for subcommands.'''
             commands = []
         self.sc = Subcommander
         self.autorun = autorun
@@ -40,3 +41,11 @@ class Console(object):
                 plac.call(self.main_fn, args)
             else:
                 plac.Interpreter.call(self.sc, args)
+    
+    def add(self, other):
+        for cmd in other.sc.commands:
+            if cmd in self.sc.commands:
+                raise ValueError("Duplicate command: {0}".format(cmd))
+            fn = getattr(other.sc, cmd)
+            setattr(self.sc, cmd, fn)
+            self.sc.commands.append(cmd)
