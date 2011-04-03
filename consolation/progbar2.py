@@ -207,7 +207,7 @@ class Ticker(object):
         if self.i >= self.length:
             self.bar.done(self.length, self.length)
             self.done = True
-            return False
+            return True
         self.bar.render(self.i, self.length)
         return True
     
@@ -216,11 +216,15 @@ class Ticker(object):
 
     def _runner(self, fn):
         def tmp(*args, **kwargs):
-            self.result = fn(*args, **kwargs)
+            try:
+                self.result = fn(*args, **kwargs)
+            except Exception, e:
+                self.failure = e
         return tmp
 
     def runGuarded(self, fn, *args, **kwargs):
         self.result = None
+        self.failure = None
         t = Thread(target=self._runner(fn), args=args, kwargs=kwargs)
         try:
             t.start()
@@ -232,6 +236,8 @@ class Ticker(object):
             sys.stdout.write('\n\r')
             sys.stdout.flush()
             raise
+        if self.failure:
+            raise self.failure
         return self.result
 
 # execute this file for a demo of the progressinfo style
