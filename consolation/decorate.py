@@ -12,6 +12,8 @@ class Arg(object):
         self.abbrev = abbrev
         self.kind = kind
 
+def Opt(**kwargs):
+    return Arg(kind='option', **kwargs)
 
 c = Console("FOO")
 main = c.main
